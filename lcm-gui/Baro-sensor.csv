@@ -1,0 +1,3 @@
+Sensor_Name, Time(s), Time(ns), Altitude(m)
+Baro-Sensor,3600,900,696969.42
+Baro-Sensor,0,0,9999.99
