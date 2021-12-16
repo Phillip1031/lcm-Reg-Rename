@@ -1,0 +1,38 @@
+package LcmGui;
+
+struct Header
+{
+    int64_t sec;
+    int32_t nsec;
+}
+
+struct Gps
+{
+    Header header;
+    double latitude_deg;
+    double longitude_deg;
+    double altitude_m;
+}
+
+struct Pva
+{
+    Header header;
+    double latitude;
+    double longitude;
+    double altitude_m;
+    double velocity[3];     // north, east, down (m)
+    double attitude;        // roll, pitch, yaw (rad)
+}
+
+struct Imu
+{
+    Header header;
+    double accel[3];               // (m/s^2) (X, Y, Z)
+    double angular_rate[3];        // (rad/s) (about X, Y, Z)
+}
+
+struct Baro
+{
+    Header header;
+    double altitude_m;      // based on pressure
+}
