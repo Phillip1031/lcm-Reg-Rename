@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="lcm_gui">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lcm/ja/lcm_gui.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
