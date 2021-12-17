@@ -28,6 +28,7 @@ public class lcmRegEditor
 	public JTextArea chanin = new JTextArea();
 	public List<JTextArea> regInput = new ArrayList<JTextArea>();
 	public JButton subbtn = new JButton("Submit Log Choice");
+	public JButton aspnbtn = new JButton();
 	public static JTextArea txtboxFilename = new JTextArea();
 
 	//LCM STUFF
@@ -91,7 +92,7 @@ public class lcmRegEditor
 					//System.out.println(regNames.get(numOfRegs));
 					numOfRegs = numOfRegs + 1;
 					
-					System.out.print(numOfRegs);
+					//System.out.print(numOfRegs);
 				}
 				else if (!regNames.contains(event.channel))
 				{
@@ -262,16 +263,16 @@ public class lcmRegEditor
 	public JPanel RegTable(int regNum, List<String> Names)
 	{
 		//VARIABLES CORRECT: regNUm = 10, Names has all registration names inside
-		for (int i =0; i < Names.size(); i++)
-		{
-			System.out.println(Names.get(i));
-		}
-		System.out.println(regNum);
+	//	for (int i =0; i < Names.size(); i++)
+	//	{
+	//		System.out.println(Names.get(i));
+	//	}
+	//	System.out.println(regNum);
 
 		regFrame = new JPanel();
 		//regFrame.setPreferredSize(new Dimension(1000,1000));
 		regFrame.setVisible(true);
-		GridLayout reggieout = new GridLayout(regNum + 1,2);
+		GridLayout reggieout = new GridLayout(regNum + 2,2);
 		regFrame.setLayout(reggieout);
 		Border bord = BorderFactory.createLineBorder(Color.BLACK);
 		for (int a = 0; a < regNum; a++)
@@ -285,8 +286,73 @@ public class lcmRegEditor
 		
 		txtboxFilename.setBorder(bord);
 		regFrame.add(txtboxFilename);
-
+		aspnbtn.setText("Click here to apply ASPN naming conventions");
+		regFrame.add(aspnbtn);
+		aspnbtn.addActionListener(new ActionListener(){
+			@Override
+			public void actionPerformed(ActionEvent e)
+			{
+					AspnCalc();				
+			}
+		});
 		return regFrame;
+	}
+	public void AspnCalc()
+	{
+		//MAYBE CREATE AN EXCEL SHEET THAT HAS ALL OF THE ASPN NAMES AND ALL OF OUR NAMES
+		String [] correspondingAspn = 	{"test1",				"test2"	
+										
+										,"test3",	"test4"
+										,"5",		"6"
+										,"7",		"8"
+										,"9",		"10"
+										,"imu",		"pva"
+										,"etc",		"ohGod"
+										,"plzwby",	"jenoo"};
+		String [] allTypes = 			{"aspn/hg1700/imu",		"aspn/novatel4truth/positionvelocityattitude"	
+										
+										,"aspn://vikingnav/fluxmag/2001.0/0/sim",	"aspn/novatel"	,	"5",	"6",	"7",	"8",	"9",	"10",	"imu",	
+											"pva",	"etc",	"ohGod",	"plzwby",	"jenoo"};
+		String result = "";
+		//DETERMINE ASPN NAMES
+		//Check title of file???
+		//Check contents?????
+
+		//Registration check
+		for (int i = 0; i < regNames.size(); i++)
+		{
+			//if (Filein.contains(allTypes[i]))
+			//	result = correspondingAspn[i];
+			for (int c = 0; c < allTypes.length; c++)
+			{
+				if (regNames.get(i).contains(allTypes[c]))
+				{
+					result = correspondingAspn[c];	
+					break;	
+				}
+			}
+			regInput.get(i).setText(result);
+
+		}
+		//chanin.setText(result);
+//		if (result == "")
+//		{
+//			int a = Arrays.asList(allTypes).indexOf(CheckDataForChannels(allfiles.get(filecnt)));
+//			System.out.println(a);
+//			result = correspondingAspn[a];
+//		}
+//
+//		if (result == "")
+//		{
+//			//LOOK AT DATA BEFORE HAVING TO WRITE THIS
+////			//CHECK THE NUMBER OF COLUMNS AND TYPE OF DATA ETC STORE EXPECTED AND COMPARE (HOPEFULLY DONT HAVE TO DO)
+	//	}
+//		chanin.setText(result);
+//		//Column of file check??
+//		File csvin = allfiles.get(filecnt);
+//		
+
+		//Data Check????
 	}
 	public void CreateGui()
 	{
