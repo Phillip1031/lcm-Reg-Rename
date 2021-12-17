@@ -1,6 +1,6 @@
 import java.io.*;
 import java.awt.event.*;
-import java.util.Scanner;
+
 import javax.swing.*;
 import java.awt.*;
 import java.io.*;
@@ -19,6 +19,7 @@ public class csvtolcm
 {
 	//GUI + IO
 	public static String Filein;
+	public JButton filebutton = new JButton("Choose CSV File");
 	public JFrame frame = new JFrame("CSV To LCM");
 	public JTextArea txt = new JTextArea();
 	public JTextArea chanin = new JTextArea();
@@ -26,8 +27,15 @@ public class csvtolcm
 	public static LCM lcm;
 	public static Log logout;
 	public JButton aspnbtn = new JButton();
-	public JButton subbtn = new JButton("Submit");
-	public static boolean looper = false;
+	public JButton subbtn = new JButton();
+	public JButton nextcsvbtn = new JButton();
+	//public static boolean looper = false;
+	public List<File> allfiles = new ArrayList<File>();
+	public int filecnt = 0;
+	public JLabel currentFile = new JLabel();
+	public boolean finalpass = false;
+
+	//Data Check
 
 	public static void main(String[] args) throws Exception
 	{
@@ -35,6 +43,231 @@ public class csvtolcm
 		System.out.println("STARTING PROGRAM");
 		starter.CreateGui();
 		
+	}
+	public void CreateGui()
+	{
+		frame = new JFrame("CSV to LCM Exportation");
+		frame.setPreferredSize(new Dimension(1000,1000));
+		frame.setVisible(true);
+		GridLayout Lout = new GridLayout(3,1);
+		frame.setLayout(Lout);
+		
+		//frame.add(new JLabel("Select CSV File To Change To LCMLog"));
+		frame.add(filebutton);
+		//frame.add(new JLabel("<html>To change the event's channels enter new channel here.<br>Otherwise leave blank.</html>"));
+		
+		frame.add(GoodiePanel());
+		
+		//frame.add(new JLabel("Click Submit If You Are Ready To Submit."));
+		filebutton.addActionListener(new ActionListener(){
+			@Override
+			public void actionPerformed(ActionEvent e)
+			{
+				FolderChoice();
+				//FileChoice();
+				aspnbtn.setEnabled(true);
+				subbtn.setEnabled(true);
+			}
+		});
+		subbtn.setEnabled(false);
+		subbtn.setText("Submit CSV #" + (filecnt + 1) +"?");
+		frame.add(subbtn);
+		subbtn.addActionListener(new ActionListener(){
+			@Override
+			public void actionPerformed(ActionEvent e)
+			{
+				//if(Filein != null && Filein != "")
+					//WriteLog();
+				if (allfiles.get(filecnt).getName() != null && allfiles.get(filecnt).getName() != "")
+				{
+					WriteLog();	
+				}
+				
+			}
+		});
+
+		changeFont(frame, new Font("Verdana", Font.PLAIN, 20));
+		//changeFont(chanin, new Font("Verdana", Font.PLAIN, 20));
+	//	frame.add(chanin);
+//	frame.add(txt);
+		
+		frame.pack();
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		
+	}
+	public JPanel GoodiePanel()
+	{
+		JPanel goodies = new JPanel();
+		GridLayout Lout = new GridLayout(4,1);
+		goodies.setLayout(Lout);
+
+		currentFile = new JLabel("Current CSV: ");
+		goodies.add(currentFile);
+
+		
+		goodies.add(chanin);
+		chanin.setText("Input Desired Channel Name");
+		
+		
+		fileOutName.setText("File_Out_Name");
+		goodies.add(fileOutName);
+
+		aspnbtn.setText("Click here to apply ASPN channel name");
+		aspnbtn.setEnabled(false);
+		aspnbtn.addActionListener(new ActionListener(){
+			@Override
+			public void actionPerformed(ActionEvent e)
+			{
+				
+				AspnCalc();
+			}
+		});
+		goodies.add(aspnbtn);
+		changeFont(goodies, new Font("Verdana", Font.PLAIN, 20));
+		
+		return goodies;
+	}
+	public void FileChoice()
+	{
+		JFileChooser f = new JFileChooser();
+		f.setSize(400,400);
+		String FPath = "";
+		int result = f.showOpenDialog(frame);
+		if(result == JFileChooser.APPROVE_OPTION)
+		{
+			File selectedFile = f.getSelectedFile();
+			FPath = selectedFile.getPath();
+		}
+		Filein = FPath;
+	}
+	public void FolderChoice()
+	{
+		File selectedFile = new File("");
+		JFileChooser f = new JFileChooser();
+		f.setSize(400,400);
+		f.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+		String FPath = "";
+		int result = f.showOpenDialog(frame);
+		if(result == JFileChooser.APPROVE_OPTION)
+		{
+			selectedFile = f.getSelectedFile();
+			FPath = selectedFile.getPath();
+		}
+		String [] filenames = selectedFile.list();
+
+		for (String individual : filenames)
+		{
+			allfiles.add(new File(FPath + "/" + individual));
+		}
+		System.out.println("All Files read");
+		Update();
+		Filein = FPath;
+	}
+	public void Update()
+	{
+		filebutton.setEnabled(false);
+		chanin.setText("Input Desired Channel Name");
+		if (filecnt < allfiles.size())
+			currentFile.setText("Current CSV (" + (filecnt + 1) + " / " + allfiles.size() + "): "  + allfiles.get(filecnt).getName());
+		if (filecnt + 1 < allfiles.size())
+			subbtn.setText("Submit CSV # " + (filecnt + 1) + "?");
+		else
+		{
+			subbtn.setText("Submit Final CSV?");
+			finalpass = true;
+		}
+	}
+	public void AspnCalc()
+	{
+
+		//MAYBE READ FROM A TXT FILE THAT HAS ALL OF THE COMBOS
+		//Fileresults = ....
+		//allTypes = filres(:,1)
+		//allchans = filres(:,2)
+		//etc
+		// for (int i =0; i < allTypes.length; i++)
+		//{
+		//		if(Filein.contains(allTypes[i]))
+		//			resultchan = allchans[i];
+		//		return resultchan;
+		//}
+		String [] correspondingAspn = 	{"BaroASPN"	,	"AltASPN"	,	"ImuASPN"	,	"HMASPN",	"5",	"6",	"7",	"8",	"9",	"10",	"imu",
+											"pva",	"etc",	"ohGod",	"plzwby",	"jenoo"};
+		String [] allTypes = 			{"Baro-Sensor"		,	"Altitude"	,	"imu"		,	"HM"	,	"5",	"6",	"7",	"8",	"9",	"10",	"imu",	
+											"pva",	"etc",	"ohGod",	"plzwby",	"jenoo"};
+		String result = "";
+		//DETERMINE ASPN NAMES
+		//Check title of file???
+		//Check contents?????
+
+		//TITLE CHECK
+		for (int i = 0; i < allTypes.length; i++)
+		{
+			//if (Filein.contains(allTypes[i]))
+			//	result = correspondingAspn[i];
+			if (allfiles.get(filecnt).getName().contains(allTypes[i]))
+				result = correspondingAspn[i];
+		}
+		//chanin.setText(result);
+		if (result == "")
+		{
+			int a = Arrays.asList(allTypes).indexOf(CheckDataForChannels(allfiles.get(filecnt)));
+			System.out.println(a);
+			result = correspondingAspn[a];
+		}
+
+		if (result == "")
+		{
+			//LOOK AT DATA BEFORE HAVING TO WRITE THIS
+			//CHECK THE NUMBER OF COLUMNS AND TYPE OF DATA ETC STORE EXPECTED AND COMPARE (HOPEFULLY DONT HAVE TO DO)
+		}
+		chanin.setText(result);
+		//Column of file check??
+//		File csvin = allfiles.get(filecnt);
+//		
+
+		//Data Check????
+	}
+	public String CheckDataForChannels(File f)
+	{
+		String out = "";
+		String line = "";
+		String splitchar = ",";
+		//List<String> aspn = new ArrayList<String>();
+		int num = 0;
+		int linecnt = 0;
+		int colnum = 0;
+		boolean header = false;
+		//first pass
+		try
+		{
+			BufferedReader br = new BufferedReader(new FileReader(f));
+			line = br.readLine();
+			if (line != null)
+			{
+				String[] contents = line.split(splitchar);
+				for (int i = 0; i < contents.length; i++)
+				{
+					if (contents[i].contains("channel") || contents[i].contains("registration or anything like that"))
+					{
+						header = true;
+						colnum = i;
+					}
+				}	
+			}
+			//Grab value
+			line = br.readLine();
+			if (line != null)
+			{
+				String[] contents = line.split(splitchar);
+				out = contents[colnum];
+			}	
+		}catch(IOException e)
+		{
+			e.printStackTrace();
+		}
+		System.out.println(out);
+		return out;
 	}
 	public void WriteLog()
 	{
@@ -46,8 +279,6 @@ public class csvtolcm
 		//
 		//Log has: 
 		System.out.println("IN WRITELOG");
-		File fileold = new File("testlog");
-		fileold.delete();
 		String line = "";
 		String splitchar = ",";
 		//List<String> aspn = new ArrayList<String>();
@@ -56,18 +287,30 @@ public class csvtolcm
 		int num = 0;
 		int linecnt = 0;
 		//lcm = LCM.getSingleton();
-		//THis way works if the channel name of the things are located within the csv file. ie col 1 is the sensor name or the channel name w/e or the sensor name or channel is within the title fo the file
 		try
 		{
 		//	System.out.print(Filein);
-			logout = new Log(fileOutName.getText(), "rw"); 
-			BufferedReader br = new BufferedReader(new FileReader(Filein));
-			if (Filein.contains("imu"))
-			{
-				//aspn.add("EEXXAAMMPPLLEEIIMMUUAASSPPNNCCHHAANNEELLNNAAMMEE");
-			}
 
-			System.out.println("trying to go through file: " + Filein);
+			if(filecnt == 0)
+			{
+				File filechk = new File(fileOutName.getText());
+				File filechkjlp = new File(fileOutName.getText() + ".jlp");
+				if (filechk.exists())
+				{
+					System.out.println("Deleted :" + fileOutName.getText());
+					filechk.delete();
+					filechkjlp.delete();
+				}
+				logout = new Log(fileOutName.getText(), "rw"); 
+			}
+			BufferedReader br = new BufferedReader(new FileReader(allfiles.get(filecnt)));
+		//	if (Filein.contains("imu"))
+		//	{
+		//		//aspn.add("EEXXAAMMPPLLEEIIMMUUAASSPPNNCCHHAANNEELLNNAAMMEE");
+		//	}
+		//CURRENT SETUP: 
+
+			System.out.println("trying to go through file: " + allfiles.get(filecnt).getName());
 
 			while ((line = br.readLine()) != null)
 			{
@@ -107,15 +350,16 @@ public class csvtolcm
 			//		utime_start = System.currentTimeMillis() * 1000;
 			//		event.utime = utime_start + (System.nanoTime() - nanotime_start) / 1000;
 				
-					event.utime = baromsg.header.sec * 1000000000 + (baromsg.header.nsec / 1000);
+					event.utime = baromsg.header.sec + (baromsg.header.nsec / 1000000000);
 
 		//			event.utime = 0;
 					event.eventNumber = num;
 					num++;
 					//GEN NEW LOG FILE. DELTA T vary time within acceptable range
-					//CHRONOLOGICAL										
-					for (int i = 0; i < 5; i++)
-						logout.write(event.utime, event.channel, baromsg);
+					//CHRONOLOGICAL			
+					System.out.println("Event written info:\nLog name:\t" + fileOutName.getText() + "\nEvent channel:\t" + event.channel + "\nEvent Utime:\t" + event.utime + "\nEvent Number:\t" + event.eventNumber);							
+					logout.write(event.utime, event.channel, baromsg);
+					//logout.write(event);
 					logout.flush();
 				}
 				if(in.contains("Gps"))
@@ -252,11 +496,7 @@ public class csvtolcm
 //					lcm.publish(event.channel, baromsg);
 
 				}
-
-				
 			}
-
-
 		}
 		catch(IOException e)
 				{
@@ -265,77 +505,38 @@ public class csvtolcm
 		
 		System.out.println("JOBS DONE");
 
-		looper = true;
-		frame.remove(subbtn);
-		subbtn.setText("Restart Program?");
-		subbtn.addActionListener(new ActionListener(){
-			@Override
-			public void actionPerformed(ActionEvent e)
-			{
-					RepeatThisNoUserInput();				
-			}
-		});
-		frame.add(subbtn);
+		//looper = true;
+		//frame.remove(subbtn);
+		//subbtn.setText("Restart Program?");
+		//subbtn.addActionListener(new ActionListener(){
+		//	@Override
+		//	public void actionPerformed(ActionEvent e)
+		//	{
+		//			RepeatThisNoUserInput();				
+		//	}
+		//});
+
+		if (filecnt + 1 < allfiles.size())
+		{
+			System.out.println("Cycling to the next CSV: " + allfiles.get(filecnt + 1).getName());
+		}
+		if (finalpass == false)
+			NextCSV();
+		else
+			endthis();
+		//subbtn.setText("Cycle to Next CSV?");
+		//subbtn.addActionListener(new ActionListener(){
+		//	@Override
+		//	public void actionPerformed(ActionEvent e)
+		//	{
+		//			NextCSV();		
+		//	}
+		//});
+		//frame.add(subbtn);
 		//RepeatThis(looper);;
 	}
-	public void FileChoice()
-	{
-		JFileChooser f = new JFileChooser();
-		f.setSize(400,400);
-		String FPath = "";
-		int result = f.showOpenDialog(frame);
-		if(result == JFileChooser.APPROVE_OPTION)
-		{
-			File selectedFile = f.getSelectedFile();
-			FPath = selectedFile.getPath();
-		}
-		Filein = FPath;
-	}
-	public void CreateGui()
-	{
-		frame = new JFrame("CSV to LCM Exportation");
-		frame.setPreferredSize(new Dimension(1000,1000));
-		frame.setVisible(true);
-		GridLayout Lout = new GridLayout(3,1);
-		frame.setLayout(Lout);
-		JButton filebutton = new JButton("Choose CSV File");
-		//frame.add(new JLabel("Select CSV File To Change To LCMLog"));
-		frame.add(filebutton);
-		//frame.add(new JLabel("<html>To change the event's channels enter new channel here.<br>Otherwise leave blank.</html>"));
-		
-		frame.add(GoodiePanel());
-		
-		//frame.add(new JLabel("Click Submit If You Are Ready To Submit."));
-		filebutton.addActionListener(new ActionListener(){
-			@Override
-			public void actionPerformed(ActionEvent e)
-			{
-				FileChoice();
-				aspnbtn.setEnabled(true);
-				subbtn.setEnabled(true);
-			}
-		});
-		subbtn.setEnabled(false);
-		frame.add(subbtn);
-		subbtn.addActionListener(new ActionListener(){
-			@Override
-			public void actionPerformed(ActionEvent e)
-			{
-				if(Filein != null && Filein != "")
-					WriteLog();	
-				
-			}
-		});
+	
 
-		changeFont(frame, new Font("Verdana", Font.PLAIN, 20));
-		//changeFont(chanin, new Font("Verdana", Font.PLAIN, 20));
-	//	frame.add(chanin);
-//	frame.add(txt);
-		
-		frame.pack();
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		
-	}
 	public static void changeFont(Component comp, Font font)
 	{
 		comp.setFont(font);
@@ -389,6 +590,27 @@ public class csvtolcm
 		System.out.println("STARTING PROGRAM");
 		starter.CreateGui();
 	}
+	public void NextCSV()
+	{
+		System.out.println(allfiles.size());
+		if (filecnt < allfiles.size())
+		{
+			System.out.println("Size of file array: " + allfiles.size());
+			filecnt++;
+			Update();
+		}
+		else
+		{
+			System.out.println("All files have been stored.");
+		}
+
+		//Filein = "";
+		//frame = new JFrame("CSV To LCM");
+		//CreateGui();
+		
+		System.out.println("Moving to next csv. Loop num: " + (filecnt -1));
+
+	}
 	public void endthis()
 	{
 		//frame.dispose();
@@ -396,66 +618,11 @@ public class csvtolcm
 		System.exit(0);
 
 	}
-	public void AspnCalc()
-	{
-		//MAYBE READ FROM A TXT FILE THAT HAS ALL OF THE COMBOS
-		//Fileresults = ....
-		//allTypes = filres(:,1)
-		//allchans = filres(:,2)
-		//etc
-		// for (int i =0; i < allTypes.length; i++)
-		//{
-		//		if(Filein.contains(allTypes[i]))
-		//			resultchan = allchans[i];
-		//		return resultchan;
-		//}
-		String [] allTypes = {"1","2","3","4","5","6","7","8","9","10","imu","pva","etc","ohGod","plzwby","jenoo"};
-		String result = "";
-		//DETERMINE ASPN NAMES
-		//Check title of file???
-		//Check contents?????
-
-		//TITLE CHECK
-		for (int i = 0; i < allTypes.length; i++)
-		{
-			if (Filein.contains(allTypes[i]))
-				result = allTypes[i];
-		}
-		if (Filein.contains("imu"))
-		{
-			chanin.setText("UUUHHHMMM I GUEESS ITS LIKE /aspn/hg1700/imu or something");
-		}
-		else
-			chanin.setText("Some other aspn chan");
-		
-	}
-	public JPanel GoodiePanel()
-	{
-		JPanel goodies = new JPanel();
-		goodies.add(chanin);
-		chanin.setText("Input Desired Channel Name");
-		GridLayout Lout = new GridLayout(3,1);
-		goodies.setLayout(Lout);
-		
-		fileOutName.setText("File_Out_Name");
-		goodies.add(fileOutName);
-		aspnbtn = new JButton("Click here to apply ASPN channel name");
-		aspnbtn.setEnabled(false);
-		aspnbtn.addActionListener(new ActionListener(){
-			@Override
-			public void actionPerformed(ActionEvent e)
-			{
-				
-				AspnCalc();
-			}
-		});
-		goodies.add(aspnbtn);
-		changeFont(goodies, new Font("Verdana", Font.PLAIN, 20));
-		return goodies;
-	}
+	
+	
 	public void ResetGlobals()
 	{
-		 Filein = "";
+		Filein = "";
 		frame = new JFrame("CSV To LCM");
 		chanin = new JTextArea();
 		fileOutName = new JTextArea();
@@ -463,6 +630,6 @@ public class csvtolcm
 		Log logout;
 		aspnbtn = new JButton();
 		subbtn = new JButton("Submit");
-		looper = false;
+		//looper = false;
 	}
 }
